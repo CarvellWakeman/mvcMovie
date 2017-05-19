@@ -1,3 +1,6 @@
+# SDGTraining
+Personal repo for SDGTraining https://github.com/CarvellWakeman/SDGTraining
+
 # mvcMovie
 Microsoft ASP.NET training example
 
