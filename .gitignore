@@ -1,0 +1,4 @@
+*.tmp
+.vs/
+mvcMovie/bin/
+mvcMovie/obj/

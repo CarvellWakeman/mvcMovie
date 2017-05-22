@@ -15,24 +15,42 @@ namespace mvcMovie.Controllers
         private MovieDBContext db = new MovieDBContext();
 
         // GET: Movies
-        public ActionResult Index()
-        {
-            return View(db.Movies.ToList());
+        public ActionResult Index(string movieGenre, string searchString) {
+            // Get a list of Genre's from the movies we have
+            var GenreLst = new List<string>();
+            var GenreQry = from d in db.Movies orderby d.Genre select d.Genre;
+
+            GenreLst.AddRange(GenreQry.Distinct());
+            ViewBag.movieGenre = new SelectList(GenreLst); // new SelectList(GenreLst, "Horror"); // Default select Horror Genre
+        
+            // Get all movies
+            var movies = from m in db.Movies select m;
+
+            // Search string
+            if (!String.IsNullOrEmpty(searchString)) {
+                movies = movies.Where(s => s.Title.Contains(searchString));
+            }
+
+            // Genre drop down
+            if (!String.IsNullOrEmpty(movieGenre)) {
+                movies = movies.Where(x => x.Genre == movieGenre);
+            }
+
+            return View(movies);
         }
 
         // GET: Movies/Details/5
         public ActionResult Details(int? id)
         {
-            if (id == null)
-            {
+            if (id == null) {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
             Movie movie = db.Movies.Find(id);
-            if (movie == null)
-            {
+            if (movie == null) {
                 return HttpNotFound();
             }
+
             return View(movie);
         }
 
@@ -47,12 +65,18 @@ namespace mvcMovie.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "ID,Title,ReleaseDate,Genre,Price")] Movie movie)
+        public ActionResult Create([Bind(Include = "ID,Title,ReleaseDate,Genre,Price,Rating")] Movie movie)
         {
             if (ModelState.IsValid)
             {
-                db.Movies.Add(movie);
-                db.SaveChanges();
+                try
+                {
+                    db.Movies.Add(movie);
+                    db.SaveChanges();
+                } catch (Exception e) {
+                    Console.WriteLine(e.ToString());
+                }
+               
                 return RedirectToAction("Index");
             }
 
@@ -60,17 +84,16 @@ namespace mvcMovie.Controllers
         }
 
         // GET: Movies/Edit/5
-        public ActionResult Edit(int? id)
-        {
-            if (id == null)
-            {
+        public ActionResult Edit(int? id) {
+            if (id == null) {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
+
             Movie movie = db.Movies.Find(id);
-            if (movie == null)
-            {
+            if (movie == null) {
                 return HttpNotFound();
             }
+
             return View(movie);
         }
 
@@ -79,14 +102,13 @@ namespace mvcMovie.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "ID,Title,ReleaseDate,Genre,Price")] Movie movie)
-        {
-            if (ModelState.IsValid)
-            {
+        public ActionResult Edit([Bind(Include = "ID,Title,ReleaseDate,Genre,Price,Rating")] Movie movie) {
+            if (ModelState.IsValid) {
                 db.Entry(movie).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
+
             return View(movie);
         }
 
